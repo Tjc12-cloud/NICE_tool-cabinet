@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>📐 量角器 Pro · 入口</title>
+    <style>
+        /* ----- 全局重置 & 基础 ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0b12;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, #2b1a4a, #0d0f1a 60%, #000000);
+            animation: bgFlow 20s infinite alternate ease-in-out;
+            z-index: -2;
+        }
+        @keyframes bgFlow {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(5%, 5%) rotate(5deg); }
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            animation: float 12s infinite alternate ease-in-out;
+        }
+        .particle:nth-child(1) { top: 10%; left: 20%; animation-duration: 14s; }
+        .particle:nth-child(2) { top: 70%; left: 80%; animation-duration: 18s; }
+        .particle:nth-child(3) { top: 40%; left: 60%; animation-duration: 10s; }
+        .particle:nth-child(4) { top: 80%; left: 10%; animation-duration: 22s; }
+        .particle:nth-child(5) { top: 20%; left: 90%; animation-duration: 16s; }
+        .particle:nth-child(6) { top: 60%; left: 40%; animation-duration: 20s; }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+            100% { transform: translate(40px, -40px) scale(2); opacity: 1; }
+        }
+
+        .app-container {
+            max-width: 1440px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* ----- 入口页 ----- */
+        .landing-page {
+            background: rgba(20, 22, 36, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 40px;
+            padding: 48px 40px 32px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+            overflow: hidden;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            opacity: 1;
+            transform: scale(1);
+        }
+        .landing-page.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .landing-page::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 40px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.3), transparent 50%, rgba(162, 155, 254, 0.2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .landing-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .landing-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .landing-header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .landing-header .badge {
+            background: rgba(108, 92, 231, 0.3);
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            color: #a78bfa;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .landing-sub {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.5px;
+            font-weight: 400;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* 配图：纯文字符号，无图形端点 */
+        .landing-figure {
+            width: 140px;
+            height: 140px;
+            margin: 8px 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(108, 92, 231, 0.15), transparent 70%);
+            border: 2px solid rgba(108, 92, 231, 0.2);
+            box-shadow: 0 0 60px rgba(108, 92, 231, 0.1);
+        }
+        .landing-figure .angle-symbol {
+            font-size: 80px;
+            font-weight: 300;
+            color: #a29bfe;
+            text-shadow: 0 0 30px rgba(162, 155, 254, 0.3);
+            line-height: 1;
+            user-select: none;
+        }
+        .landing-figure .angle-symbol sub {
+            font-size: 28px;
+            font-weight: 400;
+            color: #c4b5fd;
+        }
+
+        .landing-btn {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border: none;
+            padding: 18px 48px;
+            border-radius: 40px;
+            color: #fff;
+            font-size: 22px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.4);
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .landing-btn:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 12px 40px rgba(108, 92, 231, 0.6);
+            background: linear-gradient(135deg, #7d6cf0, #b3acff);
+        }
+        .landing-btn:active {
+            transform: scale(0.96);
+        }
+
+        .landing-intro {
+            width: 100%;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px;
+            line-height: 1.6;
+            text-align: left;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 20px;
+            margin-top: 8px;
+        }
+        .landing-intro h2 {
+            color: #fff;
+            font-size: 20px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .landing-intro h3 {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 17px;
+            margin: 16px 0 8px;
+            font-weight: 500;
+        }
+        .landing-intro p {
+            margin-bottom: 10px;
+        }
+        .landing-intro ul,
+        .landing-intro ol {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        .landing-intro li {
+            margin-bottom: 4px;
+        }
+
+        .landing-footer {
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 13px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        /* ----- 工具页 ----- */
+        .tool-page {
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .tool-page.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: all;
+            position: relative;
+        }
+
+        .tool-inner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            background: rgba(20, 22, 36, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 40px;
+            padding: 28px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+        .tool-inner::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 40px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.3), transparent 50%, rgba(162, 155, 254, 0.2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .toolbar {
+            flex: 0 0 240px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .toolbar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .toolbar-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .toolbar-header .badge {
+            background: rgba(108, 92, 231, 0.3);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            color: #a78bfa;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        .sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: -4px;
+            letter-spacing: 0.3px;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 4px 0;
+        }
+        .btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 18px;
+            border-radius: 18px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            border-color: transparent;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #7d6cf0, #b3acff);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.5);
+            border-color: transparent;
+        }
+        .btn-danger {
+            background: rgba(255, 107, 107, 0.12);
+            border-color: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        .btn-danger:hover {
+            background: rgba(255, 107, 107, 0.25);
+            border-color: rgba(255, 107, 107, 0.4);
+        }
+        .file-input-wrap {
+            position: relative;
+            overflow: hidden;
+        }
+        .file-input-wrap input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-input-wrap .btn {
+            pointer-events: none;
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 14px;
+            border-radius: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            border-left: 2px solid rgba(108, 92, 231, 0.4);
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+        .angle-list {
+            flex: 1;
+            max-height: 240px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 4px;
+            margin-top: 2px;
+        }
+        .angle-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .angle-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .angle-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+        }
+        .angle-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #6c5ce7;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+        .angle-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+        .angle-item .angle-value {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            font-size: 15px;
+        }
+        .angle-item .del-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.25);
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+            padding: 0 6px;
+            line-height: 1;
+            border-radius: 8px;
+        }
+        .angle-item .del-btn:hover {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.15);
+            transform: scale(1.2);
+        }
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                transform: translateX(-20px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+        .angle-item-remove {
+            animation: slideOut 0.25s ease forwards;
+        }
+        @keyframes slideOut {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+        }
+
+        .canvas-wrap {
+            flex: 1;
+            min-width: 400px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 8px 30px rgba(0, 0, 0, 0.6);
+            touch-action: none;
+        }
+        .canvas-wrap canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .landing-page {
+                padding: 36px 28px 24px;
+            }
+            .landing-header h1 {
+                font-size: 34px;
+            }
+            .landing-figure {
+                width: 120px;
+                height: 120px;
+            }
+            .landing-figure .angle-symbol {
+                font-size: 64px;
+            }
+            .landing-btn {
+                font-size: 18px;
+                padding: 16px 36px;
+            }
+            .landing-intro {
+                font-size: 14px;
+            }
+            .toolbar {
+                flex: 0 0 200px;
+            }
+            .btn {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+            .canvas-wrap {
+                min-width: 300px;
+            }
+        }
+        @media (max-width: 640px) {
+            body {
+                padding: 8px;
+            }
+            .landing-page {
+                padding: 24px 16px 16px;
+                border-radius: 28px;
+            }
+            .landing-content {
+                gap: 18px;
+            }
+            .landing-header h1 {
+                font-size: 28px;
+            }
+            .landing-header .badge {
+                font-size: 12px;
+                padding: 4px 12px;
+            }
+            .landing-sub {
+                font-size: 14px;
+                padding: 6px 16px;
+            }
+            .landing-figure {
+                width: 100px;
+                height: 100px;
+            }
+            .landing-figure .angle-symbol {
+                font-size: 52px;
+            }
+            .landing-btn {
+                font-size: 16px;
+                padding: 14px 28px;
+            }
+            .landing-intro {
+                font-size: 13px;
+                padding-top: 16px;
+            }
+            .landing-intro h2 {
+                font-size: 18px;
+            }
+            .landing-intro h3 {
+                font-size: 15px;
+            }
+            .landing-footer {
+                font-size: 11px;
+                padding-top: 16px;
+            }
+
+            .tool-inner {
+                flex-direction: column;
+                padding: 14px;
+                gap: 14px;
+                border-radius: 28px;
+            }
+            .toolbar {
+                flex: 1 1 auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .toolbar-header {
+                flex: 0 0 100%;
+            }
+            .toolbar-header h1 {
+                font-size: 22px;
+            }
+            .sub {
+                font-size: 12px;
+            }
+            .btn-group {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .btn {
+                padding: 12px 16px;
+                font-size: 14px;
+                border-radius: 16px;
+                flex: 1 0 auto;
+                min-width: 80px;
+                justify-content: center;
+            }
+            .status-bar {
+                font-size: 12px;
+                min-height: 38px;
+                padding: 8px 12px;
+                flex: 0 0 100%;
+            }
+            .angle-list {
+                max-height: 140px;
+                flex: 1 1 100%;
+            }
+            .canvas-wrap {
+                min-width: 0;
+                border-radius: 18px;
+            }
+        }
+        @media (max-width: 400px) {
+            .landing-page {
+                padding: 16px 12px 12px;
+            }
+            .landing-header h1 {
+                font-size: 22px;
+            }
+            .landing-figure {
+                width: 80px;
+                height: 80px;
+            }
+            .landing-figure .angle-symbol {
+                font-size: 40px;
+            }
+            .landing-btn {
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+            .landing-intro {
+                font-size: 12px;
+            }
+        }
+        @media (pointer: coarse) {
+            .btn {
+                padding: 14px 20px;
+                min-height: 48px;
+            }
+            .landing-btn {
+                padding: 20px 40px;
+                min-height: 60px;
+            }
+            .angle-item .del-btn {
+                padding: 8px 10px;
+                font-size: 22px;
+            }
+            .canvas-wrap canvas {
+                cursor: default;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- ========== 入口页 ========== -->
+        <div class="landing-page" id="landingPage">
+            <div class="landing-content">
+                <div class="landing-header">
+                    <h1>📐 量角器</h1>
+                    <span class="badge">Pro</span>
+                </div>
+                <div class="landing-sub">NICE科创内部工具</div>
+
+                <!-- 纯文字角度符号，无图形端点 -->
+                <div class="landing-figure">
+                    <span class="angle-symbol">∠<sub>47°</sub></span>
+                </div>
+
+                <button class="landing-btn" id="enterBtn">🚀 点击跳转 进入工具</button>
+
+                <div class="landing-intro">
+                    <h2>📐 量角器 Pro · 使用介绍</h2>
+                    <p>感谢您选择<strong>量角器 Pro</strong> —— 一款专为团队打造的<strong>高级在线角度测量工具</strong>。它集成了<strong>手动精准测量、图片标注、实时调整、多端适配</strong>等核心能力，无需安装，打开浏览器即可使用，界面炫酷且操作直观。</p>
+
+                    <h3>🚀 快速上手</h3>
+                    <ol>
+                        <li><strong>添加角度</strong>：点击左侧工具栏的 <strong>“✦ 添加角度”</strong> 按钮，进入“添加模式”。</li>
+                        <li><strong>点击三点</strong>：在画布上依次点击 <strong>顶点 → 端点1 → 端点2</strong>，角度自动生成。</li>
+                        <li><strong>拖拽调整</strong>：任意拖拽三个点，角度值实时更新。</li>
+                        <li><strong>上传图片</strong>：点击 <strong>“🖼️ 上传图片”</strong> 选择本地图片作为底图，支持平移和滚轮缩放。</li>
+                        <li><strong>保存结果</strong>：点击 <strong>“💾 保存截图”</strong> 下载当前画布为 PNG 图片。</li>
+                    </ol>
+
+                    <h3>🎯 核心功能详解</h3>
+                    <ul>
+                        <li><strong>手动添加</strong>：三步生成角度，弧线生长动画反馈清晰。</li>
+                        <li><strong>拖拽调整</strong>：所有角度点可自由拖动，联动更新。</li>
+                        <li><strong>图片操作</strong>：上传图片自动等比居中，支持平移和缩放（滚轮/双指）。</li>
+                        <li><strong>角度管理</strong>：列表展示所有角度，可单个删除或一键清空。</li>
+                        <li><strong>保存分享</strong>：一键导出高清截图，含背景和所有标注。</li>
+                    </ul>
+
+                    <h3>📱 多端自适应</h3>
+                    <p>工具自动检测屏幕尺寸，提供最合适的布局：电脑端左侧工具栏+右侧画布；平板端紧凑布局；手机端工具栏横向折叠，按钮放大，画布全屏。所有交互支持触摸手势。</p>
+
+                    <h3>🎨 视觉与交互亮点</h3>
+                    <ul>
+                        <li>流光动态背景 + 漂浮粒子，科技感十足。</li>
+                        <li>毛玻璃面板 + 霓虹按钮，视觉层次丰富。</li>
+                        <li>弧线生长动画、脉冲光晕、浮动度数标签，交互反馈细腻。</li>
+                    </ul>
+
+                    <h3>❓ 常见问题</h3>
+                    <ul>
+                        <li><strong>点击三点不生成？</strong> 确认处于“添加模式”且依次点击顶点、端点1、端点2。</li>
+                        <li><strong>图片变形？</strong> 工具采用等比缩放，始终完整显示。</li>
+                        <li><strong>保存截图？</strong> 包含所有内容，清晰度 900×640。</li>
+                        <li><strong>收费吗？</strong> 完全免费，无需注册。</li>
+                    </ul>
+                </div>
+
+                <div class="landing-footer">
+                    © 2026 NICE科创 · 内部工具
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 工具页 ========== -->
+        <div class="tool-page" id="toolPage">
+            <div class="tool-inner">
+                <div class="toolbar">
+                    <div class="toolbar-header">
+                        <h1>📐 量角器</h1>
+                        <span class="badge">Pro</span>
+                    </div>
+                    <div class="sub">NICE科创内部工具</div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" id="addAngleBtn">✦ 添加角度</button>
+                        <div class="file-input-wrap">
+                            <button class="btn">🖼️ 上传图片</button>
+                            <input type="file" accept="image/*" id="imageUpload" />
+                        </div>
+                        <button class="btn" id="saveBtn">💾 保存截图</button>
+                        <button class="btn btn-danger" id="clearBtn">✕ 清空</button>
+                    </div>
+
+                    <div class="status-bar" id="statusBar">💡 点击「添加角度」依次点三点</div>
+
+                    <div class="angle-list" id="angleList"></div>
+                </div>
+
+                <div class="canvas-wrap">
+                    <canvas id="canvas" width="900" height="640"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- 页面切换 ----------
+            const landingPage = document.getElementById('landingPage');
+            const toolPage = document.getElementById('toolPage');
+            const enterBtn = document.getElementById('enterBtn');
+
+            enterBtn.addEventListener('click', function() {
+                landingPage.classList.add('hidden');
+                toolPage.classList.add('active');
+                if (typeof initTool === 'function') {
+                    initTool();
+                }
+            });
+
+            // ---------- 完整的工具逻辑 ----------
+            function initTool() {
+                if (window._toolInited) return;
+                window._toolInited = true;
+
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                const statusBar = document.getElementById('statusBar');
+                const angleListEl = document.getElementById('angleList');
+                const addAngleBtn = document.getElementById('addAngleBtn');
+                const imageUpload = document.getElementById('imageUpload');
+                const saveBtn = document.getElementById('saveBtn');
+                const clearBtn = document.getElementById('clearBtn');
+
+                const CANVAS_W = 900,
+                    CANVAS_H = 640;
+                let angles = [];
+                let nextId = 1;
+                let isAdding = false;
+                let tempPoints = [];
+                let dragTarget = null;
+                let dragOffset = { x: 0, y: 0 };
+                let hasImage = false;
+                let imgWidth = 0,
+                    imgHeight = 0;
+                let imgTransform = { scale: 1, offsetX: 0, offsetY: 0 };
+                let backgroundImageObj = null;
+                let time = 0;
+                let animFrame = null;
+                const COLORS = ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#4d908e', '#577590', '#277da1',
+                    '#6c5ce7', '#a29bfe', '#fd79a8', '#00cec9', '#fdcb6e', '#e17055'
+                ];
+
+                function getColor(i) { return COLORS[i % COLORS.length]; }
+
+                function calcAngle(vertex, p1, p2) {
+                    const v = normalizedToCanvas(vertex);
+                    const a = normalizedToCanvas(p1);
+                    const b = normalizedToCanvas(p2);
+                    const v1 = { x: a.x - v.x, y: a.y - v.y };
+                    const v2 = { x: b.x - v.x, y: b.y - v.y };
+                    const dot = v1.x * v2.x + v1.y * v2.y;
+                    const mag1 = Math.hypot(v1.x, v1.y);
+                    const mag2 = Math.hypot(v2.x, v2.y);
+                    if (mag1 === 0 || mag2 === 0) return 0;
+                    let cos = dot / (mag1 * mag2);
+                    cos = Math.min(1, Math.max(-1, cos));
+                    const rad = Math.acos(cos);
+                    return rad * 180 / Math.PI;
+                }
+
+                function normalizedToCanvas(npt) {
+                    if (!hasImage) {
+                        return { x: npt.nx * CANVAS_W, y: npt.ny * CANVAS_H };
+                    }
+                    const sw = imgWidth * imgTransform.scale;
+                    const sh = imgHeight * imgTransform.scale;
+                    return {
+                        x: imgTransform.offsetX + npt.nx * sw,
+                        y: imgTransform.offsetY + npt.ny * sh
+                    };
+                }
+
+                function canvasToNormalized(px, py) {
+                    if (!hasImage) {
+                        return { nx: Math.min(1, Math.max(0, px / CANVAS_W)), ny: Math.min(1, Math.max(0, py / CANVAS_H)) };
+                    }
+                    const sw = imgWidth * imgTransform.scale;
+                    const sh = imgHeight * imgTransform.scale;
+                    let nx = (px - imgTransform.offsetX) / sw;
+                    let ny = (py - imgTransform.offsetY) / sh;
+                    nx = Math.min(1, Math.max(0, nx));
+                    ny = Math.min(1, Math.max(0, ny));
+                    return { nx, ny };
+                }
+
+                function hitTest(px, py, npt, radius = 16) {
+                    const pt = normalizedToCanvas(npt);
+                    const dx = px - pt.x;
+                    const dy = py - pt.y;
+                    return dx * dx + dy * dy <= radius * radius;
+                }
+
+                function findDragTarget(mx, my) {
+                    for (const angle of angles) {
+                        if (hitTest(mx, my, angle.vertex)) return { angleId: angle.id, pointType: 'vertex' };
+                        if (hitTest(mx, my, angle.p1)) return { angleId: angle.id, pointType: 'p1' };
+                        if (hitTest(mx, my, angle.p2)) return { angleId: angle.id, pointType: 'p2' };
+                    }
+                    return null;
+                }
+
+                function updateAngle(angle) {
+                    angle.value = calcAngle(angle.vertex, angle.p1, angle.p2);
+                    renderAngleList();
+                }
+
+                function deleteAngle(id) {
+                    const idx = angles.findIndex(a => a.id === id);
+                    if (idx === -1) return;
+                    const items = angleListEl.querySelectorAll('.angle-item');
+                    if (items[idx]) {
+                        items[idx].classList.add('angle-item-remove');
+                        setTimeout(() => {
+                            angles = angles.filter(a => a.id !== id);
+                            if (isAdding && tempPoints.length > 0) {
+                                isAdding = false;
+                                tempPoints = [];
+                                statusBar.innerHTML = '💡 已取消添加';
+                                updateCursor();
+                            }
+                            renderAngleList();
+                        }, 250);
+                    } else {
+                        angles = angles.filter(a => a.id !== id);
+                        renderAngleList();
+                    }
+                }
+
+                function fitImage(img) {
+                    imgWidth = img.width;
+                    imgHeight = img.height;
+                    const ratio = Math.min(CANVAS_W / imgWidth, CANVAS_H / imgHeight);
+                    imgTransform.scale = ratio;
+                    imgTransform.offsetX = (CANVAS_W - imgWidth * ratio) / 2;
+                    imgTransform.offsetY = (CANVAS_H - imgHeight * ratio) / 2;
+                    hasImage = true;
+                }
+
+                function draw() {
+                    ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+                    if (hasImage && backgroundImageObj) {
+                        ctx.save();
+                        ctx.translate(imgTransform.offsetX, imgTransform.offsetY);
+                        ctx.scale(imgTransform.scale, imgTransform.scale);
+                        ctx.drawImage(backgroundImageObj, 0, 0, imgWidth, imgHeight);
+                        ctx.restore();
+                    } else {
+                        ctx.fillStyle = '#0e101a';
+                        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                        ctx.lineWidth = 1;
+                        const step = 50;
+                        const offset = (time * 0.02) % step;
+                        for (let x = -step + offset; x <= CANVAS_W + step; x += step) {
+                            ctx.beginPath();
+                            ctx.moveTo(x, 0);
+                            ctx.lineTo(x, CANVAS_H);
+                            ctx.stroke();
+                        }
+                        for (let y = -step + offset; y <= CANVAS_H + step; y += step) {
+                            ctx.beginPath();
+                            ctx.moveTo(0, y);
+                            ctx.lineTo(CANVAS_W, y);
+                            ctx.stroke();
+                        }
+                        const grad = ctx.createRadialGradient(CANVAS_W / 2, CANVAS_H / 2, 0, CANVAS_W / 2, CANVAS_H / 2,
+                            CANVAS_W * 0.6);
+                        grad.addColorStop(0, 'rgba(108,92,231,0.05)');
+                        grad.addColorStop(1, 'transparent');
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                    }
+
+                    for (const angle of angles) {
+                        const vertex = normalizedToCanvas(angle.vertex);
+                        const p1 = normalizedToCanvas(angle.p1);
+                        const p2 = normalizedToCanvas(angle.p2);
+                        const color = angle.color;
+                        const value = angle.value;
+
+                        const v1 = { x: p1.x - vertex.x, y: p1.y - vertex.y };
+                        const v2 = { x: p2.x - vertex.x, y: p2.y - vertex.y };
+                        let startA = Math.atan2(v1.y, v1.x);
+                        let endA = Math.atan2(v2.y, v2.x);
+                        let diff = endA - startA;
+                        if (diff < 0) diff += 2 * Math.PI;
+                        if (diff > Math.PI) { const tmp = startA;
+                            startA = endA;
+                            endA = tmp; }
+                        const angleRad = value * Math.PI / 180;
+                        const radius = 50;
+                        const progress = Math.min(1, (time * 0.01) % 1 + 0.2);
+                        const drawAngle = angleRad * progress;
+
+                        ctx.save();
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 20;
+                        ctx.beginPath();
+                        ctx.arc(vertex.x, vertex.y, radius, startA, startA + drawAngle);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                        ctx.restore();
+
+                        ctx.save();
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 40;
+                        ctx.globalAlpha = 0.3;
+                        ctx.beginPath();
+                        ctx.arc(vertex.x, vertex.y, radius - 6, startA, startA + drawAngle);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 6;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.moveTo(vertex.x, vertex.y);
+                        ctx.lineTo(p1.x, p1.y);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 2.5;
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(vertex.x, vertex.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                        ctx.restore();
+
+                        const midA = (startA + endA) / 2;
+                        const labelR = radius + 32 + 6 * Math.sin(time * 0.03 + angle.id);
+                        const lx = vertex.x + labelR * Math.cos(midA);
+                        const ly = vertex.y + labelR * Math.sin(midA);
+                        ctx.save();
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 20;
+                        ctx.fillStyle = color;
+                        ctx.font = 'bold 20px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(value.toFixed(1) + '°', lx, ly);
+                        ctx.restore();
+
+                        const drawPoint = (pt, color) => {
+                            const pulse = 1 + 0.2 * Math.sin(time * 0.04 + pt.x + pt.y);
+                            ctx.save();
+                            ctx.shadowColor = color;
+                            ctx.shadowBlur = 30 * pulse;
+                            ctx.beginPath();
+                            ctx.arc(pt.x, pt.y, 8 * pulse, 0, 2 * Math.PI);
+                            ctx.fillStyle = color;
+                            ctx.fill();
+                            ctx.shadowBlur = 0;
+                            ctx.strokeStyle = '#fff';
+                            ctx.lineWidth = 1.5;
+                            ctx.stroke();
+                            ctx.restore();
+                            ctx.beginPath();
+                            ctx.arc(pt.x - 2, pt.y - 2, 3, 0, 2 * Math.PI);
+                            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                            ctx.fill();
+                        };
+                        drawPoint(vertex, color);
+                        drawPoint(p1, color);
+                        drawPoint(p2, color);
+                    }
+
+                    if (isAdding) {
+                        for (let i = 0; i < tempPoints.length; i++) {
+                            const pt = normalizedToCanvas(tempPoints[i]);
+                            ctx.save();
+                            ctx.shadowColor = '#6c5ce7';
+                            ctx.shadowBlur = 30;
+                            ctx.beginPath();
+                            ctx.arc(pt.x, pt.y, 10, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#fff';
+                            ctx.fill();
+                            ctx.shadowBlur = 0;
+                            ctx.strokeStyle = '#6c5ce7';
+                            ctx.lineWidth = 2.5;
+                            ctx.stroke();
+                            ctx.restore();
+                            ctx.fillStyle = '#6c5ce7';
+                            ctx.font = 'bold 16px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(i + 1, pt.x, pt.y - 26);
+                        }
+                    }
+                }
+
+                function animate() {
+                    time += 1;
+                    draw();
+                    animFrame = requestAnimationFrame(animate);
+                }
+
+                function renderAngleList() {
+                    if (angles.length === 0) {
+                        angleListEl.innerHTML =
+                            `<div style="color:rgba(255,255,255,0.2);font-size:14px;padding:12px 0;text-align:center;">暂无角度</div>`;
+                        return;
+                    }
+                    let html = '';
+                    for (const a of angles) {
+                        html += `
+                            <div class="angle-item" style="border-left-color:${a.color}" data-id="${a.id}">
+                                <span class="angle-value" style="color:${a.color}">${a.value.toFixed(1)}°</span>
+                                <button class="del-btn" data-id="${a.id}">✕</button>
+                            </div>
+                        `;
+                    }
+                    angleListEl.innerHTML = html;
+                    angleListEl.querySelectorAll('.del-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const id = parseInt(btn.dataset.id);
+                            deleteAngle(id);
+                        });
+                    });
+                }
+
+                function updateCursor() {
+                    canvas.style.cursor = isAdding ? 'crosshair' : 'grab';
+                }
+
+                function startAddAngle() {
+                    if (isAdding) {
+                        tempPoints = [];
+                        isAdding = false;
+                        statusBar.innerHTML = '💡 已取消，重新点击「添加角度」';
+                        updateCursor();
+                        return;
+                    }
+                    isAdding = true;
+                    tempPoints = [];
+                    statusBar.innerHTML = '📍 请点击第一个点 (顶点)';
+                    updateCursor();
+                }
+
+                function getCanvasCoords(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = CANVAS_W / rect.width;
+                    const scaleY = CANVAS_H / rect.height;
+                    let clientX, clientY;
+                    if (e.touches) {
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                        e.preventDefault();
+                    } else {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    return {
+                        x: (clientX - rect.left) * scaleX,
+                        y: (clientY - rect.top) * scaleY
+                    };
+                }
+
+                let isDragging = false;
+                let dragStartMouse = null;
+                let dragStartTransform = null;
+
+                function onPointerDown(e) {
+                    const { x, y } = getCanvasCoords(e);
+
+                    if (isAdding) {
+                        const npt = canvasToNormalized(x, y);
+                        tempPoints.push(npt);
+                        if (tempPoints.length === 1) statusBar.innerHTML = '📍 请点击第二个点 (端点1)';
+                        else if (tempPoints.length === 2) statusBar.innerHTML = '📍 请点击第三个点 (端点2)';
+                        else if (tempPoints.length === 3) {
+                            const [vertex, p1, p2] = tempPoints;
+                            const color = getColor(angles.length);
+                            const angle = {
+                                id: nextId++,
+                                vertex: { nx: vertex.nx, ny: vertex.ny },
+                                p1: { nx: p1.nx, ny: p1.ny },
+                                p2: { nx: p2.nx, ny: p2.ny },
+                                color: color,
+                                value: calcAngle(vertex, p1, p2)
+                            };
+                            angles.push(angle);
+                            isAdding = false;
+                            tempPoints = [];
+                            statusBar.innerHTML = '✅ 角度已添加，可继续添加或拖拽调整';
+                            updateCursor();
+                            renderAngleList();
+                        }
+                        return;
+                    }
+
+                    const target = findDragTarget(x, y);
+                    if (target) {
+                        dragTarget = target;
+                        const angle = angles.find(a => a.id === target.angleId);
+                        if (!angle) return;
+                        let npt = target.pointType === 'vertex' ? angle.vertex :
+                            target.pointType === 'p1' ? angle.p1 : angle.p2;
+                        const pt = normalizedToCanvas(npt);
+                        dragOffset.x = x - pt.x;
+                        dragOffset.y = y - pt.y;
+                        isDragging = true;
+                        canvas.style.cursor = 'grabbing';
+                        return;
+                    }
+
+                    if (hasImage) {
+                        dragStartMouse = { x, y };
+                        dragStartTransform = { scale: imgTransform.scale, offsetX: imgTransform.offsetX, offsetY: imgTransform
+                                .offsetY };
+                        isDragging = true;
+                        canvas.style.cursor = 'grabbing';
+                    }
+                }
+
+                function onPointerMove(e) {
+                    const { x, y } = getCanvasCoords(e);
+
+                    if (isDragging && dragTarget) {
+                        const angle = angles.find(a => a.id === dragTarget.angleId);
+                        if (!angle) return;
+                        let npt = dragTarget.pointType === 'vertex' ? angle.vertex :
+                            dragTarget.pointType === 'p1' ? angle.p1 : angle.p2;
+                        const newCanvasX = x - dragOffset.x;
+                        const newCanvasY = y - dragOffset.y;
+                        const newNpt = canvasToNormalized(newCanvasX, newCanvasY);
+                        npt.nx = newNpt.nx;
+                        npt.ny = newNpt.ny;
+                        updateAngle(angle);
+                    } else if (isDragging && dragStartMouse && hasImage) {
+                        const dx = x - dragStartMouse.x;
+                        const dy = y - dragStartMouse.y;
+                        imgTransform.offsetX = dragStartTransform.offsetX + dx;
+                        imgTransform.offsetY = dragStartTransform.offsetY + dy;
+                    } else {
+                        if (!isAdding) {
+                            const target = findDragTarget(x, y);
+                            canvas.style.cursor = target ? 'grab' : 'grab';
+                        }
+                    }
+                }
+
+                function onPointerUp(e) {
+                    if (dragTarget) {
+                        dragTarget = null;
+                        isDragging = false;
+                        canvas.style.cursor = 'grab';
+                        renderAngleList();
+                    } else if (isDragging && dragStartMouse) {
+                        isDragging = false;
+                        dragStartMouse = null;
+                        dragStartTransform = null;
+                        canvas.style.cursor = 'grab';
+                    }
+                }
+
+                function onWheel(e) {
+                    e.preventDefault();
+                    if (isAdding) return;
+                    if (!hasImage) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = CANVAS_W / rect.width;
+                    const scaleY = CANVAS_H / rect.height;
+                    const mx = (e.clientX - rect.left) * scaleX;
+                    const my = (e.clientY - rect.top) * scaleY;
+
+                    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                    const newScale = Math.min(10, Math.max(0.1, imgTransform.scale * delta));
+                    const nx = (mx - imgTransform.offsetX) / (imgWidth * imgTransform.scale);
+                    const ny = (my - imgTransform.offsetY) / (imgHeight * imgTransform.scale);
+                    const newOffsetX = mx - nx * (imgWidth * newScale);
+                    const newOffsetY = my - ny * (imgHeight * newScale);
+                    imgTransform.scale = newScale;
+                    imgTransform.offsetX = newOffsetX;
+                    imgTransform.offsetY = newOffsetY;
+                }
+
+                canvas.addEventListener('mousedown', onPointerDown);
+                window.addEventListener('mousemove', onPointerMove);
+                window.addEventListener('mouseup', onPointerUp);
+                canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+                window.addEventListener('touchmove', onPointerMove, { passive: false });
+                window.addEventListener('touchend', onPointerUp, { passive: false });
+                canvas.addEventListener('wheel', onWheel, { passive: false });
+
+                addAngleBtn.addEventListener('click', startAddAngle);
+
+                imageUpload.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const img = new Image();
+                        img.onload = function() {
+                            backgroundImageObj = img;
+                            fitImage(img);
+                            statusBar.innerHTML = '🖼️ 图片已加载 (可拖拽/滚轮)';
+                        };
+                        img.src = ev.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                    this.value = '';
+                });
+
+                saveBtn.addEventListener('click', function() {
+                    draw();
+                    canvas.toBlob(function(blob) {
+                        if (!blob) return;
+                        const link = document.createElement('a');
+                        link.download = '量角器截图.png';
+                        link.href = URL.createObjectURL(blob);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                    }, 'image/png');
+                });
+
+                clearBtn.addEventListener('click', function() {
+                    if (angles.length === 0 && !hasImage) return;
+                    if (confirm('确定清空所有角度和背景图片吗？')) {
+                        angles = [];
+                        hasImage = false;
+                        backgroundImageObj = null;
+                        imgWidth = 0;
+                        imgHeight = 0;
+                        imgTransform.scale = 1;
+                        imgTransform.offsetX = 0;
+                        imgTransform.offsetY = 0;
+                        isAdding = false;
+                        tempPoints = [];
+                        statusBar.innerHTML = '🗑️ 已清空';
+                        updateCursor();
+                        renderAngleList();
+                    }
+                });
+
+                function resizeCanvas() {
+                    const wrap = canvas.parentElement;
+                    const w = wrap.clientWidth;
+                    const aspect = CANVAS_W / CANVAS_H;
+                    canvas.style.width = w + 'px';
+                    canvas.style.height = (w / aspect) + 'px';
+                }
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+
+                updateCursor();
+                animate();
+                renderAngleList();
+                statusBar.innerHTML = '💡 点击「添加角度」依次点三点';
+
+                window.addEventListener('beforeunload', function() {
+                    if (animFrame) cancelAnimationFrame(animFrame);
+                });
+            }
+
+            // 如果工具页默认激活则初始化（但默认不激活，所以会等待点击）
+            if (document.getElementById('toolPage').classList.contains('active')) {
+                initTool();
+            }
+        })();
+    </script>
+</body>
+</html>
